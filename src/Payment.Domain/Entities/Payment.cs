@@ -1,4 +1,5 @@
 using Payment.Domain.Exceptions; 
+using Payment.Domain.Enums;
 namespace Payment.Domain.Entities;
 
 public class Payment
@@ -11,14 +12,6 @@ public class Payment
     public decimal Amount { get; private set; }
     public string Currency { get; private set; } = "BRL";
     public string Method { get; private set; } = string.Empty;
-    public enum PaymentStatus
-    {
-        PENDING,
-        PROCESSING,
-        APPROVED,
-        REJECTED,
-        FAILED
-    }
     public PaymentStatus Status { get; private set; } = PaymentStatus.PENDING;
     public DateTime CreatedAtUtc { get; private set; }
     public DateTime? UpdatedAtUtc { get; private set; }
