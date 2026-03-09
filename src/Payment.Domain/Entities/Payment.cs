@@ -1,3 +1,4 @@
+using Payment.Domain.Exceptions; 
 namespace Payment.Domain.Entities;
 
 public class Payment
@@ -10,50 +11,75 @@ public class Payment
     public decimal Amount { get; private set; }
     public string Currency { get; private set; } = "BRL";
     public string Method { get; private set; } = string.Empty;
-    public string Status { get; private set; } = "PENDING";
+    public enum PaymentStatus
+    {
+        PENDING,
+        PROCESSING,
+        APPROVED,
+        REJECTED,
+        FAILED
+    }
+    public PaymentStatus Status { get; private set; } = PaymentStatus.PENDING;
     public DateTime CreatedAtUtc { get; private set; }
     public DateTime? UpdatedAtUtc { get; private set; }
 
     private Payment() { }
 
-    public Payment(
+    public Payment( 
         string externalReference,
         string customerId,
         decimal amount,
         string currency,
-        string method)
+        string method
+        )
     {
+        if (string.IsNullOrWhiteSpace(customerId))
+            throw new DomainException("CustomerId cannot be null.");
+
+        if (amount <= 0)
+            throw new DomainException("Amount must be greater than zero.");
+
+        if (string.IsNullOrWhiteSpace(externalReference))
+            throw new DomainException("ExternalReference cannot be null.");
         Id = Guid.NewGuid();
         ExternalReference = externalReference;
         CustomerId = customerId;
         Amount = amount;
         Currency = currency;
         Method = method;
-        Status = "PENDING";
+        Status = PaymentStatus.PENDING;
         CreatedAtUtc = DateTime.UtcNow;
     }
 
     public void MarkAsProcessing()
     {
-        Status = "PROCESSING";
+        if (Status != PaymentStatus.PENDING)
+            throw new DomainException("Payment must be in PENDING status to be marked as PROCESSING.");
+        Status = PaymentStatus.PROCESSING;
         UpdatedAtUtc = DateTime.UtcNow;
     }
 
     public void MarkAsApproved()
     {
-        Status = "APPROVED";
+        if (Status != PaymentStatus.PROCESSING)
+            throw new DomainException("Payment must be in PROCESSING status to be approved.");
+        Status = PaymentStatus.APPROVED;
         UpdatedAtUtc = DateTime.UtcNow;
     }
 
     public void MarkAsRejected()
     {
-        Status = "REJECTED";
+        if (Status != PaymentStatus.PROCESSING)
+            throw new DomainException("Payment must be in PROCESSING status to be rejected.");
+        Status = PaymentStatus.REJECTED;
         UpdatedAtUtc = DateTime.UtcNow;
     }
 
     public void MarkAsFailed()
     {
-        Status = "FAILED";
+        if (Status != PaymentStatus.PROCESSING)
+            throw new DomainException("Payment must be in PROCESSING status to be failed.");
+        Status = PaymentStatus.FAILED;
         UpdatedAtUtc = DateTime.UtcNow;
     }
 }
