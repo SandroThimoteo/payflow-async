@@ -6,10 +6,8 @@ public interface IPaymentRepository
 {
     Task AddAsync(Payment payment);
     Task<Payment?> GetByIdAsync(Guid id);
+    Task<Payment?> GetByExternalReferenceAsync(string externalReference);
     Task UpdateAsync(Payment payment);
-
-    Task<IEnumerable<Payment>> GetByCustomerIdAsync(string customerId);
-    Task SaveChangesAsync();
 }
 
 public interface IUnitOfWork
