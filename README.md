@@ -173,13 +173,15 @@ dotnet ef migrations add InitialCreate --project ../Payment.Infrastructure --sta
 dotnet ef database update --project ../Payment.Infrastructure --startup-project .
 ```
 
-### 4. Start LocalStack (SQS)
+### 4. Start infrastructure (MySQL + LocalStack)
+
+A single command starts MySQL and LocalStack, and automatically creates the SQS queues:
 
 ```bash
-docker run -d -p 4566:4566 --name localstack localstack/localstack
+docker-compose up -d
 ```
 
-Configure fake credentials for LocalStack:
+Configure fake credentials for LocalStack (one time only):
 
 ```bash
 aws configure
@@ -187,12 +189,6 @@ aws configure
 # Secret Key: test
 # Region: us-east-1
 # Output: json
-```
-
-Create the queue:
-
-```bash
-aws --endpoint-url=http://localhost:4566 sqs create-queue --queue-name payflow-payments --region us-east-1
 ```
 
 ### 5. Run the API
