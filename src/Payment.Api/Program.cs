@@ -36,7 +36,12 @@ builder.Services.AddSingleton<IAmazonSQS>(_ =>
 });
 
 builder.Services.AddScoped<IMessagePublisher, SqsMessagePublisher>();
-builder.Services.AddScoped<CreatePaymentHandler>();
+builder.Services.AddScoped<CreatePaymentHandler>(sp => new CreatePaymentHandler(
+    sp.GetRequiredService<IPaymentRepository>(),
+    sp.GetRequiredService<IUnitOfWork>(),
+    sp.GetRequiredService<IMessagePublisher>(),
+    builder.Configuration["Aws:PaymentQueueName"] ?? "payflow-payments"
+));
 
 var app = builder.Build();
 

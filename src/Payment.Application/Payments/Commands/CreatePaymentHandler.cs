@@ -9,18 +9,18 @@ public class CreatePaymentHandler
     private readonly IPaymentRepository _repository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMessagePublisher _publisher;
-    private readonly IConfiguration _configuration;
+    private readonly string _queueName;
 
     public CreatePaymentHandler(
         IPaymentRepository repository,
         IUnitOfWork unitOfWork,
         IMessagePublisher publisher,
-        IConfiguration configuration)
+        string queueName = "payflow-payments")
     {
         _repository = repository;
         _unitOfWork = unitOfWork;
         _publisher = publisher;
-        _configuration = configuration;
+        _queueName = queueName;
     }
 
     public async Task<PaymentResponse> HandleAsync(CreatePaymentCommand command, CancellationToken cancellationToken = default)
@@ -42,9 +42,8 @@ public class CreatePaymentHandler
         await _unitOfWork.CommitAsync();
 
         // Publica mensagem na fila SQS para o Processor consumir
-        var queueName = _configuration["Aws:PaymentQueueName"] ?? "payflow-payments";
         var message = JsonSerializer.Serialize(new { paymentId = payment.Id });
-        await _publisher.PublishAsync(queueName, message, cancellationToken);
+        await _publisher.PublishAsync(_queueName, message, cancellationToken);
 
         return new PaymentResponse(
             payment.Id,
